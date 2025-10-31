@@ -14,29 +14,37 @@ import (
 	"github.com/joas8211/pocketbase-wasm/internal"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/hook"
 )
 
 func main() {
-	app := pocketbase.NewWithConfig(pocketbase.Config{
-		DefaultDev:     true,
-		DefaultDataDir: "/pb_data",
-		DBConnect:      internal.DBConnect,
+	pb := pocketbase.NewWithConfig(pocketbase.Config{
+		DefaultDev:       false,
+		DefaultDataDir:   "/pb_data",
+		DBConnect:        internal.DBConnect,
+		DataMaxOpenConns: 1,
+		DataMaxIdleConns: 1,
+		AuxMaxOpenConns:  1,
+		AuxMaxIdleConns:  1,
 	})
 
-	app.OnServe().Bind(&hook.Handler[*core.ServeEvent]{
-		Func: func(e *core.ServeEvent) error {
-			js.Global().Set("PB_REQUEST", js.FuncOf(func(this js.Value, args []js.Value) any {
+	pb.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		if err := e.Next(); err != nil {
+			return err
+		}
+
+		js.Global().Get("ON_POCKETBASE_READY").Invoke(
+			js.FuncOf(func(this js.Value, args []js.Value) any {
 				req := args[0]
-				res := args[1]
-				handle(e.Server.Handler, req, res)
+				cb := args[1]
+				go handle(e.Server.Handler, req, cb)
 				return nil
-			}))
-			return e.Next()
-		},
+			}),
+		)
+
+		return nil
 	})
 
-	if err := app.Bootstrap(); err != nil {
+	if err := pb.Bootstrap(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -45,12 +53,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := internal.Serve(app, baseURL); err != nil {
+	if err := internal.Serve(pb, baseURL); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func handle(handler http.Handler, req js.Value, res js.Value) {
+func handle(handler http.Handler, req js.Value, cb js.Value) {
+	res := js.Global().Call("Object")
+	defer cb.Invoke(res)
+
 	body := make([]byte, req.Get("body").Get("length").Int())
 	js.CopyBytesToGo(body, req.Get("body"))
 	request, err := http.NewRequest(

@@ -8,5 +8,5 @@ devenv.local.nix
 # pre-commit
 .pre-commit-config.yaml
 
-/main.wasm
-/wasm_exec.js
+/web/pocketbase.wasm
+/web/wasm_exec.js

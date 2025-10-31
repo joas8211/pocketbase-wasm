@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>PocketBase WASM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        margin: 0;
+        font-family: sans-serif;
+      }
+
+      h1,
+      p,
+      .button {
+        margin: 0.5rem 0;
+      }
+
+      details {
+        position: relative;
+      }
+
+      details[open]::details-content {
+        position: absolute;
+        top: 100%;
+        left: calc(-1 * var(--offset) - 1rem);
+        width: max-content;
+        max-width: calc(100dvw - 4rem);
+        background-color: #222;
+        color: white;
+        padding: 1rem;
+      }
+
+      details[open]::details-content::before {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        left: calc(var(--offset) + 1.5rem);
+        width: 0;
+        height: 0;
+        border-left: 0.5rem solid transparent;
+        border-right: 0.5rem solid transparent;
+        border-bottom: 0.5rem solid #222;
+      }
+
+      .button:not([hidden]) {
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          padding: 0.5rem;
+          border: 1px solid #222;
+          border-radius: 5px;
+          cursor: pointer;
+          text-decoration: none;
+          background-color: transparent;
+          font-size: 1rem;
+      }
+
+      .button:focus, .button:hover {
+        background-color: #222;
+        transition: 100ms;
+        color: white;
+      }
+
+      .container {
+        padding-inline: 1rem;
+        border-bottom: 1px solid black;
+      }
+
+      .group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      #output {
+        flex: 1;
+        white-space: pre-wrap;
+        overflow: auto;
+        background-color: #222;
+        color: white;
+        line-height: 1.5;
+        margin: 0;
+        padding: 1rem;
+      }
+
+      #output > span {
+        display: block;
+        margin-bottom: 0.25rem;
+      }
+
+      iframe {
+        flex: 1;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="group">
+        <details id="info-button" style="--offset: 0;">
+          <summary class="button"">About</summary>
+          <ul>
+            <li>The experiment will run locally on the browser you are using. The data you create will also be saved into the browser local storage.</li>
+            <li>This is the server tab. The specified URL for this page will open in an IFrame once server is started.</li>
+            <li>You can also open other tabs while the server is running.</li>
+            <li>
+              Remember that data loss is entirely possible. Probable even.
+              <b>The experiment is only suitable for testing purposes.</b>
+            </li>
+            <li>Have fun!</li>
+          </ul>
+        </details>
+        <button type="button" id="start-button" class="button"  hidden>Start</button>
+        <details id="output-button" style="--offset: 4rem;" hidden open>
+          <summary class="button"">Output</summary>
+          <pre id="output"></pre>
+        </details>
+        <button type="button" id="reset-button" class="button" hidden>Reset</button>
+      </div>
+    </div>
+    <iframe src="about:blank"></iframe>
+    <script src="/main.js"></script>
+  </body>
+</html>
